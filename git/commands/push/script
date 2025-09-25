@@ -20,6 +20,65 @@ rerun_options_parse "$@"
 # Put the command implementation here.
 # - - -
 
+
+function pushAllBranch()
+{
+    remote=$1
+
+    echo -e '\nPushing all branch.'
+    res=$(git push $remote --all 2>&1 &)
+    if [[ $res =~ 'Enumerating objects' || $res =~ '* [new branch]' || $res =~ 'Set trace flag' || $res =~ 'e.coding.net' ]]; then
+        rerun_log info 'Push successful.'
+    elif [[ $res =~ 'Everything up-to-date' ]]; then
+        rerun_log warn 'Remote repository branch already latest.'
+    elif [[ $res =~ "Could not read from remote repository" ]]; then
+        rerun_log error "Could not read from remote repository"
+        read -r -p "Press any key to retry [Y/n] " input
+        case $input in
+            [yY][eE][sS]|[yY])
+                echo "retry..."
+                pushAllBranch $remote
+                ;;
+        esac
+    else
+        res=$(cat <<- EOF
+Push failed: $res
+EOF
+)
+        rerun_log error $res
+        exit
+    fi
+}
+
+function pushAllTag()
+{
+    remote=$1
+
+    echo -e '\nPushing all tags.'
+    res=$(git push $remote --tags 2>&1 &)
+    if [[ $res =~ 'Enumerating objects' || $res =~ '* [new tag]' ]]; then
+        rerun_log info 'Push successful.'
+    elif [[ $res =~ 'Everything up-to-date' ]]; then
+        rerun_log warn 'Remote repository tags already latest. '
+    elif [[ $res =~ "Could not read from remote repository" ]]; then
+        rerun_log error "Could not read from remote repository"
+        read -r -p "Press any key to retry [Y/n] " input
+        case $input in
+            [yY][eE][sS]|[yY])
+                echo "retry..."
+                pushAllTag $remote
+                ;;
+        esac
+    else
+        res=$(cat <<- EOF
+Push failed: $res
+EOF
+)
+        rerun_log error $res
+        exit
+    fi
+}
+
 gitDirectory=$(getCurrentDirPathByName "$DIRECTORY")
 remote=$REMOTE
 branch=$(getCurrentBranchByName "$BRANCH")

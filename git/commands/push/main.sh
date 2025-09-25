@@ -8,35 +8,8 @@ cd $gitDirectory
 
 case "$branch" in
     all)
-        echo -e '\nPushing all branch.'
-        res=$(git push $remote --all 2>&1 &)
-        if [[ $res =~ 'Enumerating objects' || $res =~ '* [new branch]' ]]; then
-            rerun_log info 'Push successful.'
-        elif [[ $res =~ 'Everything up-to-date' ]]; then
-            rerun_log warn 'Remote repository branch already latest.'
-        else
-            res=$(cat <<- EOF
-Push failed: $res
-EOF
-)
-            rerun_log error $res
-            exit
-        fi
-
-        echo -e '\nPushing all tags.'
-        res=$(git push $remote --tags 2>&1 &)
-        if [[ $res =~ 'Enumerating objects' || $res =~ '* [new tag]' ]]; then
-            rerun_log info 'Push successful.'
-        elif [[ $res =~ 'Everything up-to-date' ]]; then
-            rerun_log warn 'Remote repository tags already latest. '
-        else
-            res=$(cat <<- EOF
-Push failed: $res
-EOF
-)
-            rerun_log error $res
-            exit
-        fi
+        pushAllBranch $remote
+        pushAllTag $remote
     ;;
     *)
         echo -e "\nPushing branch: ${remote}/${branch}"

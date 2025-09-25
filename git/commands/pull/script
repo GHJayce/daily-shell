@@ -68,6 +68,15 @@ function pullSingleBranch()
         rerun_log info 'Pull successful.'
     elif [[ $res =~ "couldn't find remote" ]]; then
         rerun_log error "Couldn't find remote."
+    elif [[ $res =~ "Could not read from remote repository" ]]; then
+        rerun_log error "Could not read from remote repository"
+        read -r -p "Press any key to retry [Y/n] " input
+        case $input in
+            [yY][eE][sS]|[yY])
+                echo "retry..."
+                pullSingleBranch $branch $remote
+                ;;
+        esac
     elif [[ $res =~ 'Automatic merge failed' || $res =~ 'Exiting because of an unresolved conflict' ]]; then
         rerun_log error 'Has conflicts, fix and then commit the result.'
         read -r -p "Press any key to continue [Y/n] " input
